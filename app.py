@@ -108,8 +108,23 @@ if uploaded_file is not None:
         st.write(f"F1 Score: {f1:.4f}")
         st.write(f"MCC: {mcc:.4f}")
 
+        
+        #st.write(confusion_matrix(y_true, y_pred))
+
         st.subheader("Confusion Matrix")
-        st.write(confusion_matrix(y_true, y_pred))
+
+        # get the class labels actually present
+        labels = unique_labels(y_true, y_pred)
+
+        cm = confusion_matrix(y_true, y_pred, labels=labels)
+
+        cm_df = pd.DataFrame(
+        cm,
+        index=[f"Actual {lbl}" for lbl in labels],
+        columns=[f"Pred {lbl}" for lbl in labels],
+        )
+
+        st.dataframe(cm_df)
 
         st.subheader("Classification Report")
         st.text(classification_report(y_true, y_pred))
