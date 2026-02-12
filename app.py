@@ -38,6 +38,8 @@ uploaded_file = st.file_uploader(
     type=["csv"]
 )
 
+student_ids = df["StudentID"]
+
 if uploaded_file is not None:
     data = pd.read_csv(uploaded_file)
     st.subheader("Uploaded data preview")
@@ -65,8 +67,13 @@ if uploaded_file is not None:
     clf = models[model_name]
     y_pred = clf.predict(X_scaled)
 
+    pred_df = pd.DataFrame({
+    "StudentID": student_ids,
+    "Predicted GradeClass": y_pred
+        })
+
     st.subheader("Predictions")
-    st.write(pd.DataFrame({"Predicted GradeClass": y_pred}))
+    st.write(pred_df)
 
     if y_true is not None:
         # Encode y_true if needed; here GradeClass is already labels used at training time.
