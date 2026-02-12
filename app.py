@@ -38,12 +38,16 @@ uploaded_file = st.file_uploader(
     type=["csv"]
 )
 
-student_ids = df["StudentID"]
 
 if uploaded_file is not None:
     data = pd.read_csv(uploaded_file)
     st.subheader("Uploaded data preview")
     st.dataframe(data.head())
+
+    if "StudentID" in data.columns:
+        student_ids = data["StudentID"]
+    else:
+        student_ids = None  # or create a default index
 
     # Handle presence/absence of GradeClass
     if "GradeClass" in data.columns:
