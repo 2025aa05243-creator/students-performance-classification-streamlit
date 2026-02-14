@@ -137,7 +137,8 @@ if uploaded_file is not None:
         report_df = report_df[["precision", "recall", "f1-score", "support"]]
         st.dataframe(report_df)
 
-          st.subheader("Classification Report (per class)")
+        # Report per model
+        st.subheader("Classification Report (per class)")
         report_dict = classification_report(
             y_true,
             y_pred,
