@@ -137,6 +137,20 @@ if uploaded_file is not None:
         report_df = report_df[["precision", "recall", "f1-score", "support"]]
         st.dataframe(report_df)
 
+          st.subheader("Classification Report (per class)")
+        report_dict = classification_report(
+            y_true,
+            y_pred,
+            output_dict=True,
+            zero_division=0
+        )
+        report_df = pd.DataFrame(report_dict).T
+        report_df = report_df[["precision", "recall", "f1-score", "support"]]
+        st.dataframe(report_df)
+
+        # One-row summary table for the selected model
+        st.subheader("Overall Metrics (selected model)")
+
     else:
         st.info(
             "No GradeClass column found – showing predictions only. "
