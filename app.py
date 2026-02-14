@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -106,12 +105,12 @@ if uploaded_file is not None:
         except Exception:
             auc = np.nan
 
-        st.subheader("Evaluation Metrics")
+        st.subheader("Evaluation Metrics (text)")
         st.write(f"Accuracy: {acc:.4f}")
         st.write(f"AUC: {auc:.4f}" if not np.isnan(auc) else "AUC: N/A")
-        st.write(f"Precision: {prec:.4f}")
-        st.write(f"Recall: {rec:.4f}")
-        st.write(f"F1 Score: {f1:.4f}")
+        st.write(f"Precision (weighted): {prec:.4f}")
+        st.write(f"Recall (weighted): {rec:.4f}")
+        st.write(f"F1 Score (weighted): {f1:.4f}")
         st.write(f"MCC: {mcc:.4f}")
 
         # Confusion matrix as table
@@ -137,20 +136,18 @@ if uploaded_file is not None:
         report_df = report_df[["precision", "recall", "f1-score", "support"]]
         st.dataframe(report_df)
 
-        # Report per model
-        st.subheader("Classification Report (per class)")
-        report_dict = classification_report(
-            y_true,
-            y_pred,
-            output_dict=True,
-            zero_division=0
-        )
-        report_df = pd.DataFrame(report_dict).T
-        report_df = report_df[["precision", "recall", "f1-score", "support"]]
-        st.dataframe(report_df)
-
         # One-row summary table for the selected model
         st.subheader("Overall Metrics (selected model)")
+        metrics_df = pd.DataFrame([{
+            "ML Model Name": model_name,
+            "Accuracy": float(acc),
+            "AUC": None if np.isnan(auc) else float(auc),
+            "Precision": float(prec),
+            "Recall": float(rec),
+            "F1": float(f1),
+            "MCC": float(mcc),
+        }])
+        st.dataframe(metrics_df)
 
     else:
         st.info(
