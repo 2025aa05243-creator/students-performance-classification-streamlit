@@ -1,3 +1,6 @@
+Here is the complete app.py with the confusion matrix and classification report shown as tables:
+
+python
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -39,16 +42,16 @@ uploaded_file = st.file_uploader(
     type=["csv"]
 )
 
-
 if uploaded_file is not None:
     data = pd.read_csv(uploaded_file)
     st.subheader("Uploaded data preview")
     st.dataframe(data.head())
 
+    # optional ID column
     if "StudentID" in data.columns:
         student_ids = data["StudentID"]
     else:
-        student_ids = None  # or create a default index
+        student_ids = None
 
     # Handle presence/absence of GradeClass
     if "GradeClass" in data.columns:
@@ -60,11 +63,9 @@ if uploaded_file is not None:
 
     # Align columns with training one-hot structure
     X_raw = pd.get_dummies(X_raw, drop_first=True)
-    # Add missing columns
     for col in feature_cols:
         if col not in X_raw.columns:
             X_raw[col] = 0
-    # Ensure same column order
     X_raw = X_raw[feature_cols]
 
     X_scaled = scaler.transform(X_raw)
@@ -72,16 +73,22 @@ if uploaded_file is not None:
     clf = models[model_name]
     y_pred = clf.predict(X_scaled)
 
-    pred_df = pd.DataFrame({
-    "StudentID": student_ids,
-    "Predicted GradeClass": y_pred
+    # predictions table
+    if student_ids is not None:
+        pred_df = pd.DataFrame({
+            "StudentID": student_ids,
+            "Predicted GradeClass": y_pred
+        })
+    else:
+        pred_df = pd.DataFrame({
+            "Predicted GradeClass": y_pred
         })
 
     st.subheader("Predictions")
-    st.write(pred_df)
+    st.dataframe(pred_df)
 
+    # if true labels are present, compute metrics
     if y_true is not None:
-        # Encode y_true if needed; here GradeClass is already labels used at training time.
         if hasattr(clf, "predict_proba"):
             y_proba = clf.predict_proba(X_scaled)
         else:
@@ -109,28 +116,33 @@ if uploaded_file is not None:
         st.write(f"F1 Score: {f1:.4f}")
         st.write(f"MCC: {mcc:.4f}")
 
-        
-        #st.write(confusion_matrix(y_true, y_pred))
-
+        # Confusion matrix as table
         st.subheader("Confusion Matrix")
-
-        # get the class labels actually present
         labels = unique_labels(y_true, y_pred)
-
         cm = confusion_matrix(y_true, y_pred, labels=labels)
-
         cm_df = pd.DataFrame(
-        cm,
-        index=[f"Actual {lbl}" for lbl in labels],
-        columns=[f"Pred {lbl}" for lbl in labels],
+            cm,
+            index=[f"Actual {lbl}" for lbl in labels],
+            columns=[f"Pred {lbl}" for lbl in labels],
         )
-
         st.dataframe(cm_df)
 
-        st.subheader("Classification Report")
-        st.text(classification_report(y_true, y_pred))
+        # Classification report as table
+        st.subheader("Classification Report (per class)")
+        report_dict = classification_report(
+            y_true,
+            y_pred,
+            output_dict=True,
+            zero_division=0
+        )
+        report_df = pd.DataFrame(report_dict).T
+        report_df = report_df[["precision", "recall", "f1-score", "support"]]
+        st.dataframe(report_df)
+
     else:
-        st.info("No GradeClass column found – showing predictions only. "
-                "Include GradeClass to see metrics and confusion matrix.")
+        st.info(
+            "No GradeClass column found – showing predictions only. "
+            "Include GradeClass to see metrics, confusion matrix, and classification report."
+        )
 else:
     st.warning("Upload a CSV file to run predictions and compute metrics.")
