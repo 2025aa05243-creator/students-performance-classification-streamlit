@@ -1,6 +1,4 @@
-Here is the complete app.py with the confusion matrix and classification report shown as tables:
 
-python
 import streamlit as st
 import pandas as pd
 import numpy as np
